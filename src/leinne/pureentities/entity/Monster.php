@@ -58,14 +58,14 @@ abstract class Monster extends LivingBase{
                 /** @var MonsterInventory $inv */
                 $itemStack = TypeConverter::getInstance()->coreItemStackToNet($inv->getItemInHand());
                 foreach($this->getViewers() as $viewer){
-                    $viewer->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->getId(), $itemStack, 0, ContainerIds::INVENTORY));
+                    $viewer->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->getId(), $itemStack, 0, 0, ContainerIds::INVENTORY));
                 }
             },
             function(Inventory $inv, array $oldContents) : void{
                 /** @var MonsterInventory $inv */
                 $itemStack = TypeConverter::getInstance()->coreItemStackToNet($inv->getItemInHand());
                 foreach($this->getViewers() as $viewer){
-                    $viewer->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->getId(), $itemStack, 0, ContainerIds::INVENTORY));
+                    $viewer->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->getId(), $itemStack, 0, 0, ContainerIds::INVENTORY));
                 }
             }
         ));
@@ -190,7 +190,7 @@ abstract class Monster extends LivingBase{
     protected function sendSpawnPacket(Player $player) : void{
         parent::sendSpawnPacket($player);
 
-        $player->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->id, ItemStackWrapper::legacy(TypeConverter::getInstance()->coreItemStackToNet($this->inventory->getItemInHand())), 0, ContainerIds::INVENTORY));
+        $player->getNetworkSession()->sendDataPacket(MobEquipmentPacket::create($this->id, ItemStackWrapper::legacy(TypeConverter::getInstance()->coreItemStackToNet($this->inventory->getItemInHand())), 0, 0, ContainerIds::INVENTORY));
     }
 
     public function saveNBT() : CompoundTag{

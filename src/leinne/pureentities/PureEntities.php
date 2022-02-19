@@ -286,7 +286,7 @@ class PureEntities extends PluginBase implements Listener{
         if($item->getId() === ItemIds::SPAWN_EGG && $block->getId() === ItemIds::MONSTER_SPAWNER){
             $ev->cancel();
 
-            $tile = $block->getPos()->getWorld()->getTile($block->getPos());
+            $tile = $block->getPosition()->getWorld()->getTile($block->getPosition());
             if($tile instanceof tile\MonsterSpawner){
                 $tile->setSpawnEntityType($item->getMeta());
             }else{
@@ -294,9 +294,9 @@ class PureEntities extends PluginBase implements Listener{
                     $tile->close();
                 }
 
-                $tile = TileFactory::create("MobSpawner", $block->getPos()->getWorld(), $block->getPos());
+                $tile = TileFactory::create("MobSpawner", $block->getPosition()->getWorld(), $block->getPosition());
                 $tile->readSaveData(CompoundTag::create()->setInt("EntityId", $item->getMeta()));
-                $tile->getPos()->getWorld()->addTile($tile);
+                $tile->getPosition()->getWorld()->addTile($tile);
             }
         }*/
     }
@@ -318,14 +318,14 @@ class PureEntities extends PluginBase implements Listener{
             ){
                 $ev->cancel();
 
-                $pos = $block->getPos()->asVector3();
+                $pos = $block->getPosition()->asVector3();
                 $air = VanillaBlocks::AIR();
                 for($y = 0; $y < 2; ++$y){
                     --$pos->y;
-                    $block->getPos()->getWorld()->setBlock($pos, $air);
+                    $block->getPosition()->getWorld()->setBlock($pos, $air);
                 }
 
-                $entity = new SnowGolem(Location::fromObject($block->getPos()->add(0.5, -2, 0.5), $block->getPos()->getWorld()));
+                $entity = new SnowGolem(Location::fromObject($block->getPosition()->add(0.5, -2, 0.5), $block->getPosition()->getWorld()));
                 $entity->spawnToAll();
 
                 if($player->hasFiniteResources()){
@@ -349,13 +349,13 @@ class PureEntities extends PluginBase implements Listener{
                 }
 
                 $ev->cancel();
-                $entity = new IronGolem(Location::fromObject($pos = $block->getPos()->add(0.5, -2, 0.5), $block->getPos()->getWorld()), CompoundTag::create()->setByte("PlayerCreated", 1));
+                $entity = new IronGolem(Location::fromObject($pos = $block->getPosition()->add(0.5, -2, 0.5), $block->getPosition()->getWorld()), CompoundTag::create()->setByte("PlayerCreated", 1));
                 $entity->spawnToAll();
 
-                $down->getPos()->getWorld()->setBlock($pos, $air = VanillaBlocks::AIR());
-                $down->getPos()->getWorld()->setBlock($first->getPos(), $air);
-                $down->getPos()->getWorld()->setBlock($second->getPos(), $air);
-                $down->getPos()->getWorld()->setBlock($block->getPos()->add(0, -1, 0), $air);
+                $down->getPosition()->getWorld()->setBlock($pos, $air = VanillaBlocks::AIR());
+                $down->getPosition()->getWorld()->setBlock($first->getPosition(), $air);
+                $down->getPosition()->getWorld()->setBlock($second->getPosition(), $air);
+                $down->getPosition()->getWorld()->setBlock($block->getPosition()->add(0, -1, 0), $air);
 
                 if($player->hasFiniteResources()){
                     $item->pop();

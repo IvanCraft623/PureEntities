@@ -16,7 +16,7 @@ use pocketmine\world\Position;
 class MonsterSpawner extends PMMonsterSpawner{
 
     public function onScheduledUpdate(): void{
-        $spawner = $this->getPos()->getWorld()->getTile($this->getPos());
+        $spawner = $this->getPosition()->getWorld()->getTile($this->getPosition());
         if(!$spawner instanceof TileSpawner || $spawner->closed){
             return;
         }
@@ -30,8 +30,8 @@ class MonsterSpawner extends PMMonsterSpawner{
 
             $list = [];
             $isValid = false;
-            foreach($spawner->getPos()->getWorld()->getEntities() as $k => $entity){
-                if($entity->getPosition()->distance($spawner->getPos()) <= $spawner->getRequiredPlayerRange()){
+            foreach($spawner->getPosition()->getWorld()->getEntities() as $k => $entity){
+                if($entity->getPosition()->distance($spawner->getPosition()) <= $spawner->getRequiredPlayerRange()){
                     if($entity instanceof Player){
                         $isValid = true;
                     }
@@ -43,13 +43,13 @@ class MonsterSpawner extends PMMonsterSpawner{
             if($isValid && count($list) < $spawner->getMaxNearbyEntities()){
                 $newx = mt_rand(1, max(2, $spawner->getSpawnRange()));
                 $newz = mt_rand(1, max(2, $spawner->getSpawnRange()));
-                $pos = $spawner->getPos()->asPosition();
+                $pos = $spawner->getPosition()->asPosition();
                 $pos->x += mt_rand(0, 1) ? $newx : -$newx;
                 $pos->z += mt_rand(0, 1) ? $newz : -$newz;
                 $pos->y = $this->calculateYPos($pos);
                 $nbt = EntityDataHelper::createBaseNBT($pos);
                 $nbt->setString("id", $spawner->getEntityId());
-                $entity = EntityFactory::getInstance()->createFromData($spawner->getPos()->getWorld(), $nbt);
+                $entity = EntityFactory::getInstance()->createFromData($spawner->getPosition()->getWorld(), $nbt);
                 if($entity !== null){
                     $entity->spawnToAll();
                 }

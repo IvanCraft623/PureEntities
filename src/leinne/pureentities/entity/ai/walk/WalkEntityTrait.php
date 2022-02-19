@@ -101,7 +101,7 @@ trait WalkEntityTrait{
         }
 
         if($door && !$this->checkDoorState && $this->doorBlock !== null){
-            $pos = $this->doorBlock->getPos();
+            $pos = $this->doorBlock->getPosition();
             $pos->world->broadcastPacketToViewers($pos, LevelEventPacket::create(LevelEventPacket::EVENT_BLOCK_STOP_BREAK, 0, $pos));
             $this->doorBlock = null;
         }
@@ -132,7 +132,7 @@ trait WalkEntityTrait{
         if($delay > 0 && $this->checkDoorState){
             $delay = -1;
             if($this->doorBlock !== null){
-                $pos = $this->doorBlock->getPos();
+                $pos = $this->doorBlock->getPosition();
                 if($this->doorBreakTime === 180){
                     $pos->world->broadcastPacketToViewers($pos, LevelEventPacket::create(LevelEventPacket::EVENT_BLOCK_START_BREAK, 364, $pos));
                 }

@@ -93,7 +93,7 @@ class EntityAI{
             $floor = self::getFloorPos($pos);
             $block = $pos->world->getBlockAt($floor->x, $floor->y, $floor->z);
         }else{
-            $floor = $block->getPos();
+            $floor = $block->getPosition();
         }
         $state = self::checkBlockState($block); //현재 위치에서의 블럭 상태가
         switch($state){
