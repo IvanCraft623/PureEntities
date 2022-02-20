@@ -53,7 +53,7 @@ class Chicken extends Animal{
     }
 
     public function getXpDropAmount() : int{
-        return mt_rand(1, 3);
+        return $this->baby ? 0 : mt_rand(1, 3);
     }
 
 }

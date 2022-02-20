@@ -7,6 +7,7 @@ namespace leinne\pureentities\animation;
 use pocketmine\entity\animation\Animation;
 use pocketmine\entity\Entity;
 use pocketmine\network\mcpe\protocol\ActorEventPacket;
+use pocketmine\network\mcpe\protocol\types\ActorEvent;
 
 class EatGrassAnimation implements Animation{
     private Entity $entity;
@@ -17,7 +18,7 @@ class EatGrassAnimation implements Animation{
 
     public function encode() : array{
         return [
-            ActorEventPacket::create($this->entity->getId(), ActorEventPacket::EAT_GRASS_ANIMATION, 0)
+            ActorEventPacket::create($this->entity->getId(), ActorEvent::EAT_GRASS_ANIMATION, 0)
         ];
     }
 }

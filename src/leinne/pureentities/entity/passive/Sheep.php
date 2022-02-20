@@ -14,6 +14,7 @@ use pocketmine\block\VanillaBlocks;
 use pocketmine\data\bedrock\DyeColorIdMap;
 use pocketmine\entity\Entity;
 use pocketmine\entity\EntitySizeInfo;
+use pocketmine\item\Dye;
 use pocketmine\item\Item;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
@@ -24,10 +25,33 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataCollection;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
 use pocketmine\player\Player;
+use pocketmine\utils\Random;
+use pocketmine\world\sound\BlockBreakSound;
 
 class Sheep extends Animal{
     use WalkEntityTrait{
         entityBaseTick as baseTick;
+    }
+
+    public function getRandomColor() : DyeColor{
+        $random = new Random(mt_rand());
+        $int = $random->nextBoundedInt(100);
+        if($int < 5){
+            return DyeColor::BLACK();
+        }
+        if($int < 10){
+            return DyeColor::GRAY();
+        }
+        if($int < 15){
+            return DyeColor::LIGHT_GRAY();
+        }
+        if($int < 18){
+            return DyeColor::BROWN();
+        }
+        if($random->nextBoundedInt(500) === 0){
+            return DyeColor::PINK();
+        }
+        return DyeColor::WHITE();
     }
 
     private bool $sheared;
@@ -45,18 +69,10 @@ class Sheep extends Animal{
 
     public function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
-        $color = [0, 7, 8, 15, 12, 6];
-        $r = lcg_value();
-        $weights = [0.81836, 0.05, 0.05, 0.05, 0.03, 0.00164];
-        for($i = 0, $len = count($weights); $i < $len; ++$i){
-            $r -= $weights[$i];
-            if($r <= 0){
-                $color = $color[$i];
-                break;
-            }
-        }
         $this->sheared = $nbt->getByte("Sheared", 0) !== 0;
-        $this->color = DyeColorIdMap::getInstance()->fromId($nbt->getByte("Color", $color));
+        $color = $nbt->getByte("Color", -1);
+        $dyeColor = $color !== -1 ? DyeColorIdMap::getInstance()->fromId($color) : null;
+        $this->color = $dyeColor ?? self::getRandomColor();
     }
 
     public function getDefaultMaxHealth() : int{
@@ -73,6 +89,7 @@ class Sheep extends Animal{
 
     public function setColor(DyeColor $color){
         $this->color = $color;
+        $this->networkPropertiesDirty = true;
     }
 
     public function isSheared() : bool{
@@ -81,16 +98,31 @@ class Sheep extends Animal{
 
     public function setSheared(bool $sheared) : void{
         $this->sheared = $sheared;
+        $this->networkPropertiesDirty = true;
+    }
+
+    public function shear() : bool{
+        if(!$this->sheared && !$this->baby){
+            $this->setSheared(true);
+            $this->getWorld()->addSound($this->location, new ShearSound());
+            $this->getWorld()->dropItem($this->location->add(0, 1, 0), ItemFactory::getInstance()->get(ItemIds::WOOL, DyeColorIdMap::getInstance()->toId($this->color), mt_rand(1, 3)));
+            return true;
+        }
+        return false;
     }
 
     public function interact(Player $player, Item $item) : bool{
-        if($item instanceof Shears && !$this->sheared){
+        if($item instanceof Shears && $this->shear()){
             $item->applyDamage(1);
-            $this->sheared = true;
-            $this->getWorld()->addSound($this->location, new ShearSound());
-            $this->getWorld()->dropItem($this->location, ItemFactory::getInstance()->get(ItemIds::WOOL, DyeColorIdMap::getInstance()->toId($this->color), mt_rand(1, 3)));
             return true;
         }
+        if($item instanceof Dye){
+            $this->setColor($item->getColor());
+            $item->pop();
+            return true;
+        }
+
+        //TODO: Feed
         return false;
     }
 
@@ -105,7 +137,8 @@ class Sheep extends Animal{
             if($this->eatDelay <= 0){
                 $hasUpdate = true;
                 $this->setSpeed(1.0);
-                $this->sheared = false;
+                $this->setSheared(false);
+                $this->getWorld()->addSound($this->location, new BlockBreakSound(VanillaBlocks::GRASS()));
                 $this->getWorld()->setBlockAt((int) floor($this->location->x), (int) floor($this->location->y - 1), (int) floor($this->location->z), VanillaBlocks::DIRT());
             }
         }elseif(
@@ -154,7 +187,7 @@ class Sheep extends Animal{
     }
 
     public function getXpDropAmount() : int{
-        return mt_rand(1, 3);
+        return $this->baby ? 0 : mt_rand(1, 3);
     }
 
 }

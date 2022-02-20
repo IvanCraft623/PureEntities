@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace leinne\pureentities\entity\neutral;
 
 use leinne\pureentities\entity\Monster;
+use leinne\pureentities\entity\hostile\Creeper;
 use leinne\pureentities\entity\ai\walk\WalkEntityTrait;
 use pocketmine\entity\animation\ArmSwingAnimation;
 use pocketmine\entity\Entity;
@@ -68,7 +69,7 @@ class IronGolem extends Monster{
     public function canInteractWithTarget(Entity $target, float $distanceSquare) : bool{
         if($target instanceof Player && ($this->isPlayerCreated() || !$target->isSurvival())){
             return false;
-        }elseif($target instanceof IronGolem){
+        }elseif($target instanceof IronGolem || $target instanceof Creeper){
             return false;
         }
         return $this->fixedTarget || ($target instanceof Monster || !$this->isPlayerCreated()) && $target->isAlive() && !$target->closed && $distanceSquare <= 324;
@@ -99,6 +100,17 @@ class IronGolem extends Monster{
             }
         }
         return true;
+    }
+
+    public function attack(EntityDamageEvent $source) : void{
+        if($source->getCause() === EntityDamageEvent::CAUSE_FALL){
+            $source->cancel();
+        }
+
+        if($source instanceof EntityDamageByEntityEvent){
+            $source->setKnockBack(0);
+        }
+        parent::attack($source);
     }
 
     public function saveNBT() : CompoundTag{
