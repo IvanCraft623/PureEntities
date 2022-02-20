@@ -12,10 +12,10 @@ class Node extends Position{
 
     private int $id;
     
-    /** 현재까지 이동한 거리 */
+    /** Distance traveled so far */
     private float $goal = 0.0;
 
-    /** 휴리스틱 값 */
+    /** heuristic value */
     private float $heuristic = 0.0;
 
     private ?Node $parentNode = null;

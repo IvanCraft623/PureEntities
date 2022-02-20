@@ -64,7 +64,7 @@ class Skeleton extends Monster{
                 -$this->location->pitch
             ), $this, $baseForce >= 1);
             $arrow->setMotion($this->getDirectionVector());
-            //TODO: 올바른 화살 대미지[2~5(쉬움, 보통), 3~5(어려움)]
+            //TODO: Correct Arrow Damage [2-5 (Easy, Normal), 3-5 (Hard)]
             //$arrow->setBaseDamage($arrow->getBaseDamage() + $this->getResultDamage());
             $arrow->setPickupMode(($item = $this->inventory->getItemInHand())->hasEnchantment(VanillaEnchantments::INFINITY()) ? Arrow::PICKUP_CREATIVE : Arrow::PICKUP_NONE);
 

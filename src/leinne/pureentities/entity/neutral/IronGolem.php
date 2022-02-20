@@ -58,7 +58,7 @@ class IronGolem extends Monster{
     }
 
     /**
-     * $this 와 $target의 관계가 적대관계인지 확인
+     * Check if the relationship between $this and $target is adversarial
      *
      * @param Entity $target
      * @param float $distanceSquare

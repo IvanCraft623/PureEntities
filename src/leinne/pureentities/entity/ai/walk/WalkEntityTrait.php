@@ -22,13 +22,13 @@ use pocketmine\world\sound\DoorCrashSound;
  */
 trait WalkEntityTrait{
 
-    /** 문을 부수기까지의 시간을 저장합니다 */
+    /** Save time until it break the door */
     private int $doorBreakTime = 0;
 
-    /** 문을 부술지 판단합니다 */
+    /** Decide whether to break the door */
     private int $doorBreakDelay = 0;
 
-    /** 가야할 블럭이 문인지 확인합니다 */
+    /** Check if the block to go is a door */
     private bool $checkDoorState = false;
 
     private ?Block $doorBlock = null;

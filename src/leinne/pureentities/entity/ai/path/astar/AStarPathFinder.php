@@ -33,10 +33,10 @@ class AStarPathFinder extends PathFinder{
     private int $findTick = -1;
     private int $findCount = 0;
 
-    /** 탐색을 시도할 최대 시간입니다 */
+    /** Maximum time to attempt to seek */
     protected static int $maximumTick = 0;
 
-    /** 1틱마다 몇개의 블럭을 탐색할지 선택합니다 */
+    /** Select how many blocks to search per tick */
     protected static int $blockPerTick = 0;
 
     public static function setData(int $tick, int $block) : void{
@@ -76,7 +76,7 @@ class AStarPathFinder extends PathFinder{
     }
 
     /**
-     * 최적 경로를 탐색해 결과를 도출합니다
+     * Finding the best path to get results
      *
      * @return Position[]|null
      */
@@ -118,7 +118,7 @@ class AStarPathFinder extends PathFinder{
                 $this->onChange[$hash] = true;
             }
 
-            if(isset($this->closeNode[$hash]) && $this->closeNode[$hash]->getGoal() <= $parent->getGoal()){ /** 이미 최적 경로를 찾은 경우 */
+            if(isset($this->closeNode[$hash]) && $this->closeNode[$hash]->getGoal() <= $parent->getGoal()){ /** If it have already found the optimal path */
                 continue;
             }
 
@@ -135,12 +135,12 @@ class AStarPathFinder extends PathFinder{
             foreach($near as $_ => $pos){
                 ++$this->findTick;
                 $key = EntityAI::getHash($pos);
-                if(isset($this->closeNode[$key])){ /** 이미 최적 경로를 찾은 경우 */
+                if(isset($this->closeNode[$key])){ /** If it have already found the optimal path */
                     continue;
                 }
 
                 $node = Node::create($pos, $end, $parent);
-                if(isset($this->openHash[$key])){ /** 기존 노드보다 이동 거리가 더 길 경우 */
+                if(isset($this->openHash[$key])){ /** If the moving distance is longer than the existing node */
                     if($this->openHash[$key]->getGoal() > $node->getGoal()){
                         $change = $this->openHash[$key];
                         $change->setGoal($node->getGoal());
@@ -153,7 +153,7 @@ class AStarPathFinder extends PathFinder{
             }
         }
 
-        if($finish && count($this->closeNode) > 0){ //탐색 완료
+        if($finish && count($this->closeNode) > 0){ //Exploration done
             $last = array_pop($this->closeNode);
             $path = [$last->asPosition()];
             while(($node = array_pop($this->closeNode)) !== null){
@@ -167,14 +167,14 @@ class AStarPathFinder extends PathFinder{
             return $path;
         }
 
-        //계속 탐색중
+        //keep exploring
         $this->findTick = 0;
         return [];
     }
 
 
     /**
-     * 해당 노드가 갈 수 있는 근처의 블럭좌표를 구합니다
+     * Get the block coordinates of the nearest node to which the node can go.
      *
      * @param Position $pos
      *

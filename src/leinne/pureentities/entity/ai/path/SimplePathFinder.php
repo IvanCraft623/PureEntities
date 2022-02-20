@@ -11,7 +11,7 @@ class SimplePathFinder extends PathFinder{
     public function reset() : void{}
 
     /**
-     * 최적 경로를 탐색해 결과를 도출합니다
+     * Finding the best path to get results
      *
      * @return Position[]|null
      */

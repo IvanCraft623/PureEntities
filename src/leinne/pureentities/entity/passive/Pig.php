@@ -45,12 +45,12 @@ class Pig extends Animal{
     }
 
     public function interact(Player $player, Item $item) : bool{
-        //TODO: 안장 기능
+        //TODO: saddle function
         return false;
     }
 
     public function canInteractWithTarget(Entity $target, float $distanceSquare) : bool{
-        return false; //TODO: 아이템 유인 구현
+        return false; //TODO: Implement item attraction
     }
 
     public function interactTarget() : bool{
@@ -58,7 +58,7 @@ class Pig extends Animal{
             return false;
         }
 
-        // TODO: 동물 AI 기능
+        // TODO: Animal AI Features
         return false;
     }
 

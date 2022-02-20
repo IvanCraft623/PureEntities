@@ -37,7 +37,7 @@ class EntityAI{
     }
 
     /**
-     * 특정 블럭이 어떤 상태인지를 확인해주는 메서드
+     * A method that checks the state of a specific block
      *
      * @param Block|Position $data
      *
@@ -54,8 +54,8 @@ class EntityAI{
         }
 
         $value = EntityAI::BLOCK;
-        if($block instanceof Door && count($block->getAffectedBlocks()) > 1){ //문일때
-            $value = $block instanceof WoodenDoor ? EntityAI::DOOR : EntityAI::WALL; //철문인지 판단
+        if($block instanceof Door && count($block->getAffectedBlocks()) > 1){ //when the door
+            $value = $block instanceof WoodenDoor ? EntityAI::DOOR : EntityAI::WALL; //Determine if it is an iron gate
         }else{
             $min = 256;
             $max = -1;
@@ -66,22 +66,22 @@ class EntityAI{
             $blockBox = $block->getCollisionBoxes()[0] ?? null;
             $boxDiff = $blockBox === null ? 0 : $max - $min;
             if($boxDiff <= 0){
-                if($block instanceof Lava){ //통과 가능 블럭중 예외처리
+                if($block instanceof Lava){ //Exception handling among passable blocks
                     $value = EntityAI::WALL;
                 }else{
                     $value = EntityAI::PASS;
                 }
-            }elseif($boxDiff > 1){ //울타리라면
+            }elseif($boxDiff > 1){ //if the fence
                 $value = EntityAI::WALL;
-            }elseif($boxDiff <= 0.5){ //반블럭/카펫/트랩도어 등등
+            }elseif($boxDiff <= 0.5){ //Half block/carpet/trap door, etc.
                 $value = $blockBox->minY == (int) $blockBox->minY ? EntityAI::SLAB : EntityAI::UP_SLAB;
             }
         }
-        return $block instanceof Trapdoor ? EntityAI::PASS : $value; //TODO: 트랩도어, 카펫 등
+        return $block instanceof Trapdoor ? EntityAI::PASS : $value; //TODO: trapdoors, carpets, etc.
     }
 
     /**
-     * 블럭이 통과 가능한 위치인지를 판단하는 메서드
+     * Method to determine whether a block is traversable
      *
      * @param Position $pos
      * @param Block|null $block
@@ -95,39 +95,39 @@ class EntityAI{
         }else{
             $floor = $block->getPosition();
         }
-        $state = self::checkBlockState($block); //현재 위치에서의 블럭 상태가
+        $state = self::checkBlockState($block); //The block state at the current location is
         switch($state){
             case EntityAI::WALL:
-            case EntityAI::DOOR: //벽이거나 문이라면 체크가 더이상 필요 없음
+            case EntityAI::DOOR: //If it's a wall or a door, no more checking
                 return $state;
-            case EntityAI::PASS: //통과가능시에
-                //윗블럭도 통과 가능하다면 통과판정 아니라면 벽 판정
+            case EntityAI::PASS: //when it is possible to pass
+                //If the upper block can also pass, it will pass, otherwise it will be a wall.
                 return self::checkBlockState($floor->getSide(Facing::UP)) === EntityAI::PASS ? EntityAI::PASS : EntityAI::WALL;
             case EntityAI::BLOCK:
-            case EntityAI::UP_SLAB: //블럭이거나 위에 설치된 반블럭일경우
-                $up = self::checkBlockState($upBlock = $block->getSide(Facing::UP)); //y+1의 블럭이
-                if($up === EntityAI::SLAB){ //반블럭 이고
+            case EntityAI::UP_SLAB: //In case of a block or a half block installed above
+                $up = self::checkBlockState($upBlock = $block->getSide(Facing::UP)); //The block at y+1 is
+                if($up === EntityAI::SLAB){ //half a block
                     $up2 = self::checkBlockState($floor->getSide(Facing::UP, 2));
-                    //그 위가 통과 가능하며 블럭의 최고점과 자신의 위치의 차가 블럭 이하라면 블럭 판정
+                    //If it is possible to pass above it, and the difference between the highest point of the block and its position is less than or equal to the block, it is judged as a block
                     return $up2 === EntityAI::PASS && $upBlock->getCollisionBoxes()[0]->maxY - $pos->y <= 1 ? EntityAI::BLOCK : EntityAI::WALL;
-                }elseif($up === EntityAI::PASS){ //통과가능시에
-                    //y+ 2도 통과 가능이라면
+                }elseif($up === EntityAI::PASS){ //when it is possible to pass
+                    //If y+ 2 is also passable
                     return self::checkBlockState($floor->getSide(Facing::UP, 2)) === EntityAI::PASS ?
-                        //블럭의 최고점과 자신의 위치의 차가 반블럭 이하라면 반블럭 판정 아니라면 블럭 판정
+                        //If the difference between the highest point of the block and its position is less than half a block, it is judged as a half block. Otherwise, it is judged as a block.
                         ($block->getCollisionBoxes()[0]->maxY - $pos->y <= 0.5 ? EntityAI::SLAB : EntityAI::BLOCK) : EntityAI::WALL;
                 }
                 return EntityAI::WALL;
             case EntityAI::SLAB:
                 return (
-                    self::checkBlockState($floor->getSide(Facing::UP)) === EntityAI::PASS //y + 1이 통과가능하고
-                    && (($up = self::checkBlockState($floor->getSide(Facing::UP, 2))) === EntityAI::PASS || $up === EntityAI::UP_SLAB) //y + 2을 통과가능(반블럭 포함)하면
+                    self::checkBlockState($floor->getSide(Facing::UP)) === EntityAI::PASS //y + 1 is passable
+                    && (($up = self::checkBlockState($floor->getSide(Facing::UP, 2))) === EntityAI::PASS || $up === EntityAI::UP_SLAB) //If it is possible to pass y + 2 (including half blocks),
                 ) ? EntityAI::SLAB : EntityAI::WALL;
         }
         return EntityAI::WALL;
     }
 
     /**
-     * 현재 위치에서 도달하게 될 최종 Y좌표를 계산합니다
+     * Calculate the final y-coordinate that will be reached from the current position
      *
      * @param Position $pos
      *

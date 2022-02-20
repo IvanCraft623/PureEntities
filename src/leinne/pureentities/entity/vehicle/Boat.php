@@ -29,7 +29,7 @@ class Boat extends Vehicle{
 
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
-        //TODO: 보트 종류
+        //TODO: boat type
         $this->setMaxHealth(1);
         $this->setHealth(1);
     }

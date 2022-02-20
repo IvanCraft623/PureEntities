@@ -7,7 +7,7 @@ namespace leinne\pureentities\entity\passive;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 
 class Mooshroom extends Cow{
-    //TODO: 다른 색상
+    //TODO: different color
 
     public static function getNetworkTypeId() : string{
         return EntityIds::MOOSHROOM;

@@ -95,7 +95,7 @@ class Sheep extends Animal{
     }
 
     public function canInteractWithTarget(Entity $target, float $distanceSquare) : bool{
-        return false; //TODO: 아이템 유인 구현
+        return false; //TODO: Implement item attraction
     }
 
     public function entityBaseTick(int $tickDiff = 1) : bool{
@@ -127,7 +127,7 @@ class Sheep extends Animal{
             return false;
         }
 
-        // TODO: 동물 AI 기능
+        // TODO: Animal AI Features
         return false;
     }
 

@@ -12,7 +12,7 @@ use pocketmine\world\Position;
 
 abstract class EntityNavigator{
 
-    /** 벽 등의 장애로 인해 멈춰있는 시간을 나타냅니다 */
+    /** Indicates the time stopped due to obstacles such as walls */
     private int $stopDelay = 0;
 
     protected ?Position $goal = null;
@@ -39,7 +39,7 @@ abstract class EntityNavigator{
         $holder = $this->holder;
         $target = $holder->getTargetEntity();
         if($target === null || !$holder->canInteractWithTarget($target, $near = $pos->distanceSquared($target->getPosition()))){
-            //$target = $pos->world->getNearestEntity($pos, 0, Living::class); TODO: 엔티티의 최대 탐지 거리 메서드를 추가하여 매우 빠른 엔티티 탐색
+            //$target = $pos->world->getNearestEntity($pos, 0, Living::class); TODO: Very fast entity navigation by adding the entity's max detection distance method
             $near = PHP_INT_MAX;
             $target = null;
             foreach($holder->getWorld()->getEntities() as $k => $t){ //이것이 굉장한 렉을 유발함
@@ -56,16 +56,16 @@ abstract class EntityNavigator{
             }
         }
 
-        if($target !== null){ //따라갈 엔티티가 있는경우
+        if($target !== null){ //If there is an entity to follow
             $holder->setTargetEntity($target);
-        }elseif( //없는 경우
-            $this->stopDelay >= 100 //장애물에 의해 막혀있거나
-            || (!empty($this->path) && $this->pathIndex < 0) //목표지점에 도달했다면
+        }elseif( //if there is no
+            $this->stopDelay >= 100 //blocked by an obstacle or
+            || (!empty($this->path) && $this->pathIndex < 0) //If it have reached its goal
         ){
             $this->setGoal($this->makeRandomGoal());
         }
 
-        if($this->holder->onGround && ($this->pathIndex < 0 || empty($this->path))){ //최종 목적지에 도달했거나 목적지가 변경된 경우
+        if($this->holder->onGround && ($this->pathIndex < 0 || empty($this->path))){ //It have reached its final destination or its destination has changed
             $this->path = $this->getPathFinder()->search();
             if($this->path === null){
                 $this->setGoal($this->makeRandomGoal());
@@ -118,13 +118,13 @@ abstract class EntityNavigator{
             Math::floorFloat($pos->x) !== Math::floorFloat($this->goal->x) ||
             (int) $pos->y !== (int) $this->goal->y ||
             Math::floorFloat($pos->z) !== Math::floorFloat($this->goal->z)
-        ){ //최종 목적지의 정수값이 변경된 경우
+        ){ //When the integer value of the final destination is changed
             $this->path = [];
             $this->stopDelay = 0;
             $this->pathIndex = -1;
             $this->getPathFinder()->reset();
-        }elseif(count($this->path) > 0){ //현재 진행중인 경로가 있을경우
-            $this->path[0] = $pos; //마지막 경로를 변경한다
+        }elseif(count($this->path) > 0){ //If there is a path currently in progress
+            $this->path[0] = $pos; //change the last path
         }
         $this->goal = $pos;
     }

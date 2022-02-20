@@ -86,7 +86,7 @@ class ZombifiedPiglin extends Monster implements Ageable{
 
     protected function entityBaseTick(int $tickDiff = 1) : bool{
         if($this->isAlive() && $this->angry){
-            //TODO: 얘 화 어떻게 풀림?
+            //TODO: How do you get rid of his anger?
             //--$this->angry;
         }
 

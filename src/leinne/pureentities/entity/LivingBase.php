@@ -52,12 +52,12 @@ abstract class LivingBase extends Living{
         $this->setImmobile();
     }
 
-    /** 상호작용을 위한 최소 거리 */
+    /** Minimum distance for interaction */
     public function getInteractDistance() : float{
         return 0.6;
     }
 
-    /** 상호작용이 가능한 거리인지 체크 */
+    /** Check if interaction is possible */
     public function canInteractTarget() : bool{
         $target = $this->getTargetEntity();
         if($target === null){
@@ -74,7 +74,7 @@ abstract class LivingBase extends Living{
         return $this->fixedTarget || ($target instanceof Living && $distanceSquare <= 10000);
     }
 
-    /** 타겟과의 상호작용 */
+    /** interact with target */
     public function interactTarget() : bool{
         ++$this->interactDelay;
         if(!$this->canInteractTarget()){

@@ -56,7 +56,7 @@ class SnowGolem extends Monster{
     }
 
     public function canInteractWithTarget(Entity $target, float $distanceSquare) : bool{
-        return false; //TODO: 적대감 변경
+        return false; //TODO: Implement item attraction
     }
 
     public function interactTarget() : bool{
@@ -64,7 +64,7 @@ class SnowGolem extends Monster{
             return false;
         }
 
-        //TODO: 눈덩이 던지기
+        //TODO: Animal AI Features
         return false;
     }
 
