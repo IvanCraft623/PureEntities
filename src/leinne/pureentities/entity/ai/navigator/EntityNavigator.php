@@ -42,17 +42,14 @@ abstract class EntityNavigator{
             //$target = $pos->world->getNearestEntity($pos, 0, Living::class); TODO: Very fast entity navigation by adding the entity's max detection distance method
             $near = PHP_INT_MAX;
             $target = null;
-            foreach($holder->getWorld()->getEntities() as $k => $t){ //이것이 굉장한 렉을 유발함
-                if(
-                    $t === $this
-                    || !($t instanceof Living)
-                    || ($distance = $pos->distanceSquared($t->getPosition())) > $near
-                    || !$holder->canInteractWithTarget($t, $distance)
-                ){
+            foreach($holder->getWorld()->getEntities() as $entity){ //This causes huge lag
+                if(!($entity instanceof Living)
+                    || ($distance = $pos->distanceSquared($entity->getPosition())) > $near
+                    || !$holder->canInteractWithTarget($entity, $distance)){
                     continue;
                 }
                 $near = $distance;
-                $target = $t;
+                $target = $entity;
             }
         }
 

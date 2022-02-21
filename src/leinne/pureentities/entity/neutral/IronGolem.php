@@ -18,6 +18,7 @@ use pocketmine\item\VanillaItems;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\player\Player;
+use pocketmine\world\Position;
 
 class IronGolem extends Monster{
     use WalkEntityTrait;
@@ -75,13 +76,12 @@ class IronGolem extends Monster{
         return $this->fixedTarget || ($target instanceof Monster || !$this->isPlayerCreated()) && $target->isAlive() && !$target->closed && $distanceSquare <= 324;
     }
 
-    public function interactTarget() : bool{
-        if(!parent::interactTarget()){
+    public function interactTarget(?Entity $target, ?Position $next, int $tickDiff = 1) : bool{
+        if(!parent::interactTarget($target, $next, $tickDiff)){
             return false;
         }
 
         if($this->interactDelay >= 20){
-            $target = $this->getTargetEntity();
             if($target instanceof Player){
                 $damage = $this->getResultDamage();
             }else{

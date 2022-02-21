@@ -47,7 +47,7 @@ class MonsterSpawner extends PMMonsterSpawner{
                 $pos->x += mt_rand(0, 1) ? $newx : -$newx;
                 $pos->z += mt_rand(0, 1) ? $newz : -$newz;
                 $pos->y = $this->calculateYPos($pos);
-                $nbt = EntityDataHelper::createBaseNBT($pos);
+                $nbt = EntityDataHelper::parseVec3($pos);
                 $nbt->setString("id", $spawner->getEntityId());
                 $entity = EntityFactory::getInstance()->createFromData($spawner->getPosition()->getWorld(), $nbt);
                 if($entity !== null){

@@ -6,6 +6,7 @@ namespace leinne\pureentities\entity\hostile;
 
 use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\walk\WalkEntityTrait;
+use pocketmine\entity\Entity;
 use pocketmine\entity\EntitySizeInfo;
 use pocketmine\entity\Location;
 use pocketmine\entity\projectile\Arrow;
@@ -19,6 +20,7 @@ use pocketmine\item\enchantment\VanillaEnchantments;
 use pocketmine\item\Item;
 use pocketmine\item\VanillaItems;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
+use pocketmine\world\Position;
 use pocketmine\world\sound\LaunchSound;
 use pocketmine\nbt\tag\CompoundTag;
 
@@ -107,17 +109,16 @@ class Skeleton extends Monster{
         return $this->location->distanceSquared($target->location) <= 7.84; //2.5 ** 2
     }
 
-    public function interactTarget() : bool{
+    public function interactTarget(?Entity $target, ?Position $next, int $tickDiff = 1) : bool{
         if($this->inventory->getItemInHand() instanceof Bow){
             return $this->interactTargetBow();
         }
 
-        if(!parent::interactTarget()){
+        if(!parent::interactTarget($target, $next, $tickDiff)){
             return false;
         }
 
         if($this->interactDelay >= 20){
-            $target = $this->getTargetEntity();
             $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getResultDamage());
             $target->attack($ev);
 

@@ -13,6 +13,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\FloatTag;
 use pocketmine\nbt\tag\IntTag;
 use pocketmine\player\Player;
+use pocketmine\world\Position;
 use pocketmine\world\World;
 
 abstract class LivingBase extends Living{
@@ -75,7 +76,7 @@ abstract class LivingBase extends Living{
     }
 
     /** interact with target */
-    public function interactTarget() : bool{
+    public function interactTarget(?Entity $target, ?Position $next, int $tickDiff = 1) : bool{
         ++$this->interactDelay;
         if(!$this->canInteractTarget()){
             return false;

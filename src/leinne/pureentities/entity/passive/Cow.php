@@ -12,6 +12,7 @@ use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\item\VanillaItems;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
+use pocketmine\world\Position;
 
 class Cow extends Animal{
     use WalkEntityTrait;
@@ -36,8 +37,8 @@ class Cow extends Animal{
         return false; //TODO: Implement item attraction
     }
 
-    public function interactTarget() : bool{
-        if(!parent::interactTarget()){
+    public function interactTarget(?Entity $target, ?Position $next, int $tickDiff = 1) : bool{
+        if(!parent::interactTarget($target, $next, $tickDiff)){
             return false;
         }
 

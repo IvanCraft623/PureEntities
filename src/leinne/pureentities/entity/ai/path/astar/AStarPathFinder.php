@@ -25,6 +25,9 @@ class AStarPathFinder extends PathFinder{
     private array $onChange = [];
 
     /** @var int[] */
+    private array $mapCache = [];
+
+    /** @var float[] */
     private array $yCache = [];
 
     /** @var int[] */

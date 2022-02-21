@@ -6,6 +6,8 @@ namespace leinne\pureentities\entity\hostile;
 
 use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\walk\WalkEntityTrait;
+use leinne\pureentities\sound\FuseSound;
+use pocketmine\entity\Entity;
 use pocketmine\entity\animation\ArmSwingAnimation;
 use pocketmine\entity\EntitySizeInfo;
 use pocketmine\entity\Explosive;
@@ -19,24 +21,23 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
 use pocketmine\player\Player;
 use pocketmine\world\Explosion;
+use pocketmine\world\Position;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\world\sound\FlintSteelSound;
-use pocketmine\world\sound\IgniteSound;
 
 class Creeper extends Monster implements Explosive{
     use WalkEntityTrait;
 
+    public const DEFAULT_SPEED = 0.9;
     public const DEFAULT_FUSE = 30;
 
-    private bool $ignited = false;
-
-    private bool $explode = false;
-
-    private bool $powered = false;
+    private int $explosionRadius = 3;
 
     private int $fuse = self::DEFAULT_FUSE;
 
-    private float $force = 3.0;
+    private bool $powered = false;
+
+    private bool $exploding = false;
 
     public static function getNetworkTypeId() : string{
         return EntityIds::CREEPER;
@@ -49,11 +50,11 @@ class Creeper extends Monster implements Explosive{
     protected function initEntity(CompoundTag $nbt) : void{
         parent::initEntity($nbt);
 
-        $this->force = $nbt->getFloat("Force", 3.0);
-        $this->ignited = $nbt->getByte("ignited", 0) !== 0;
-        $this->powered = $nbt->getByte("powered", 0) !== 0;
+        $this->explosionRadius = $nbt->getByte("ExplosionRadius", 3);
         $this->fuse = $nbt->getShort("Fuse", self::DEFAULT_FUSE);
-        $this->setSpeed(0.95);
+        $this->exploding = $nbt->getByte("ignited", 0) !== 0;
+        $this->powered = $nbt->getByte("powered", 0) !== 0;
+        $this->setSpeed(self::DEFAULT_SPEED);
     }
 
     public function getName() : string{
@@ -70,18 +71,20 @@ class Creeper extends Monster implements Explosive{
 
     public function setPowered(bool $value) : void{
         $this->powered = $value;
+        $this->explosionRadius = $value ? 6 : 3;
+        $this->networkPropertiesDirty = true;
     }
 
     public function isAttackable() : bool{
-        return $this->force > 0;
+        return $this->explosionRadius > 0;
     }
 
-    public function getForce() : float{
-        return $this->force;
+    public function getExplosionRadius() : int{
+        return $this->explosionRadius;
     }
 
-    public function setForce(float $force) : void{
-        $this->force = $force;
+    public function setExplosionRadius(int $radius) : void{
+        $this->explosionRadius = $radius;
     }
 
     public function getFuse() : int{
@@ -90,16 +93,17 @@ class Creeper extends Monster implements Explosive{
 
     public function setFuse(int $fuse) : void{
         $this->fuse = $fuse;
+        $this->networkPropertiesDirty = true;
     }
 
-    public function ignite() : void{
-        $this->ignited = true;
-        $this->setSpeed(0);
+    public function setExploding(bool $value = true) : void{
+        $this->exploding = $value;
+        $this->networkPropertiesDirty = true;
     }
 
     public function interact(Player $player, Item $item) : bool{
-        if($item instanceof FlintSteel && !$this->ignited){
-            $this->ignite();
+        if($item instanceof FlintSteel && !$this->exploding){
+            $this->setExploding();
             $item->applyDamage(1);
             $player->broadcastAnimation(new ArmSwingAnimation($player));
             $this->getWorld()->addSound($this->location, new FlintSteelSound());
@@ -109,7 +113,7 @@ class Creeper extends Monster implements Explosive{
     }
 
     public function explode() : void{
-        $ev = new ExplosionPrimeEvent($this, $this->force);
+        $ev = new ExplosionPrimeEvent($this, $this->explosionRadius);
         $ev->call();
 
         if(!$ev->isCancelled()){
@@ -121,24 +125,24 @@ class Creeper extends Monster implements Explosive{
         }
     }
 
-    public function interactTarget() : bool{
-        if(!$this->canInteractTarget() && !$this->ignited){
+    public function interactTarget(?Entity $target, ?Position $next, int $tickDiff = 1) : bool{
+        if(!$this->canInteractTarget() && !$this->exploding){
             if($this->fuse < self::DEFAULT_FUSE){
-                ++$this->fuse;
-                $this->explode = false;
-            }elseif($this->getSpeed() === 0.4){
-                $this->setSpeed(0.95);
+                $this->setFuse($this->fuse + 1);
+            }elseif($this->getSpeed() < self::DEFAULT_FUSE){
+                $this->setSpeed(self::DEFAULT_SPEED);
             }
+            $this->setExploding(false);
             return false;
         }
 
-        $this->setSpeed(0.4);
-        if(!$this->explode){
-            //TODO: Correct explosion sound
-            $this->getWorld()->addSound($this->location, new IgniteSound());
+        $this->setSpeed(0.35);
+        if(!$this->exploding){
+            $this->getWorld()->addSound($this->location, new FuseSound($this->location));
         }
-        $this->explode = true;
-        if(--$this->fuse < 0){
+        $this->setExploding();
+        $this->setFuse($this->fuse - 1);
+        if($this->fuse < 0){
             $this->flagForDespawn();
             $this->explode();
         }
@@ -149,15 +153,15 @@ class Creeper extends Monster implements Explosive{
         parent::syncNetworkData($properties);
 
         $properties->setInt(EntityMetadataProperties::FUSE_LENGTH, $this->fuse);
-        $properties->setGenericFlag(EntityMetadataFlags::IGNITED, $this->explode);
+        $properties->setGenericFlag(EntityMetadataFlags::IGNITED, $this->exploding);
         $properties->setGenericFlag(EntityMetadataFlags::POWERED, $this->powered);
     }
 
     public function saveNBT() : CompoundTag{
         $nbt = parent::saveNBT();
+        $nbt->setByte("ExplosionRadius", $this->explosionRadius);
         $nbt->setShort("Fuse", $this->fuse);
-        $nbt->setFloat("Force", $this->force);
-        $nbt->setByte("ignited", $this->ignited ? 1 : 0);
+        $nbt->setByte("ignited", $this->exploding ? 1 : 0);
         $nbt->setByte("powered", $this->powered ? 1 : 0);
         return $nbt;
     }

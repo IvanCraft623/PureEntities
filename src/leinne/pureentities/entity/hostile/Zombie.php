@@ -8,6 +8,7 @@ use leinne\pureentities\entity\Monster;
 use leinne\pureentities\entity\ai\walk\WalkEntityTrait;
 use pocketmine\entity\Ageable;
 use pocketmine\entity\animation\ArmSwingAnimation;
+use pocketmine\entity\Entity;
 use pocketmine\entity\EntitySizeInfo;
 use pocketmine\event\entity\EntityDamageByEntityEvent;
 use pocketmine\event\entity\EntityDamageEvent;
@@ -16,6 +17,7 @@ use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\network\mcpe\protocol\types\entity\EntityIds;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataCollection;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
+use pocketmine\world\Position;
 
 class Zombie extends Monster implements Ageable{
     use WalkEntityTrait;
@@ -51,15 +53,14 @@ class Zombie extends Monster implements Ageable{
         return $this->baby;
     }
 
-    public function interactTarget() : bool{
-        if(!parent::interactTarget()){
+    public function interactTarget(?Entity $target, ?Position $next, int $tickDiff = 1) : bool{
+        if(!parent::interactTarget($target, $next, $tickDiff)){
             return false;
         }
 
         if($this->interactDelay >= 20){
             $this->broadcastAnimation(new ArmSwingAnimation($this));
 
-            $target = $this->getTargetEntity();
             $ev = new EntityDamageByEntityEvent($this, $target, EntityDamageEvent::CAUSE_ENTITY_ATTACK, $this->getResultDamage());
             $target->attack($ev);
 

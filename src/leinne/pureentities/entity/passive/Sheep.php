@@ -25,17 +25,16 @@ use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataCollection;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataFlags;
 use pocketmine\network\mcpe\protocol\types\entity\EntityMetadataProperties;
 use pocketmine\player\Player;
-use pocketmine\utils\Random;
-use pocketmine\world\sound\BlockBreakSound;
+use pocketmine\world\sound\BlockPlaceSound;
+use pocketmine\world\Position;
 
 class Sheep extends Animal{
     use WalkEntityTrait{
         entityBaseTick as baseTick;
     }
 
-    public function getRandomColor() : DyeColor{
-        $random = new Random(mt_rand());
-        $int = $random->nextBoundedInt(100);
+    public static function getRandomColor() : DyeColor{
+        $int = mt_rand(0, 100);
         if($int < 5){
             return DyeColor::BLACK();
         }
@@ -48,7 +47,7 @@ class Sheep extends Animal{
         if($int < 18){
             return DyeColor::BROWN();
         }
-        if($random->nextBoundedInt(500) === 0){
+        if(mt_rand(0, 500) === 0){
             return DyeColor::PINK();
         }
         return DyeColor::WHITE();
@@ -136,10 +135,11 @@ class Sheep extends Animal{
             $this->eatDelay -= $tickDiff;
             if($this->eatDelay <= 0){
                 $hasUpdate = true;
+                $dirt = VanillaBlocks::DIRT();
                 $this->setSpeed(1.0);
                 $this->setSheared(false);
-                $this->getWorld()->addSound($this->location, new BlockBreakSound(VanillaBlocks::GRASS()));
-                $this->getWorld()->setBlockAt((int) floor($this->location->x), (int) floor($this->location->y - 1), (int) floor($this->location->z), VanillaBlocks::DIRT());
+                $this->getWorld()->setBlockAt((int) floor($this->location->x), (int) floor($this->location->y - 1), (int) floor($this->location->z), $dirt);
+                $this->getWorld()->addSound($this->location, new BlockPlaceSound($dirt));
             }
         }elseif(
             $this->sheared &&
@@ -155,8 +155,8 @@ class Sheep extends Animal{
         return $this->baseTick($tickDiff) || $hasUpdate;
     }
 
-    public function interactTarget() : bool{
-        if(!parent::interactTarget()){
+    public function interactTarget(?Entity $target, ?Position $next, int $tickDiff = 1) : bool{
+        if(!parent::interactTarget($target, $next, $tickDiff)){
             return false;
         }
 

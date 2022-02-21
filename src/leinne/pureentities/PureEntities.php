@@ -223,7 +223,7 @@ class PureEntities extends PluginBase implements Listener{
         if($packet instanceof InteractPacket && $packet->action === InteractPacket::ACTION_LEAVE_VEHICLE){
             $event->cancel();
             $player = $event->getOrigin()->getPlayer();
-            $entity = $player->getWorld()->getEntity($packet->target);
+            $entity = $player->getWorld()->getEntity($packet->targetActorRuntimeId);
             if($entity instanceof Vehicle && !$entity->isClosed()){
                 $entity->removePassenger($player);
             }
@@ -253,11 +253,10 @@ class PureEntities extends PluginBase implements Listener{
             }
         }elseif($packet instanceof MoveActorAbsolutePacket){
             $player = $event->getOrigin()->getPlayer();
-            $entity = $player->getWorld()->getEntity($packet->entityRuntimeId);
+            $entity = $player->getWorld()->getEntity($packet->actorRuntimeId);
             if($entity instanceof Vehicle && !$entity->isClosed() && $entity->getRider() === $player){
                 $event->cancel();
-                //[xRot, yRot, zRot] = [pitch, headYaw, yaw]
-                $entity->absoluteMove($packet->position, $packet->yRot, $packet->xRot);
+                $entity->absoluteMove($packet->position, $packet->headYaw, $packet->pitch);
             }
         }elseif($packet instanceof AnimatePacket){
             $player = $event->getOrigin()->getPlayer();
